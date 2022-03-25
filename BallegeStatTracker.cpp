@@ -129,6 +129,8 @@ class Statboard
         Statboard(const int pointValue) {
             m_numTeam1 = 0;
             m_numTeam2 = 0;
+            m_score1 = 0;
+            m_score2 = 0;
 
             // If an invalid point value is passed, set to default point value
             if ((pointValue != 1) && (pointValue != 2)) {
@@ -176,7 +178,14 @@ class Statboard
 
         /* --- Stat Functions --- */
         
-        // void editAssists(int team, int player, int numAssists);
+        // Edits assists for a specified player
+        void editAssists(int team, int player, int numAssists) {
+            if ((team == 1) && (player <= m_numTeam1)) {
+                m_team1[player-1]->editAssists(numAssists);
+            } else if ((team == 2) && (player <= m_numTeam2)) {
+                m_team2[player-1]->editRebounds(numAssists);
+            }
+        }
 
         // Edits rebounds for a specified player
         void editRebounds(int team, int player, int numRebounds) {
@@ -187,15 +196,32 @@ class Statboard
             }
         }
 
-        // void editSteals(int player, int numSteals);
-        // void editTurnovers(int player, int numTurnovers);
+        // Edits steals for a specified player
+        void editSteals(int team, int player, int numSteals) {
+            if ((team == 1) && (player <= m_numTeam1)) {
+                m_team1[player-1]->editSteals(numSteals);
+            } else if ((team == 2) && (player <= m_numTeam2)) {
+                m_team2[player-1]->editSteals(numSteals);
+            }
+        }
+
+        // Edits turnovers for a specified player
+        void editTurnovers(int team, int player, int numTurnovers) {
+            if ((team == 1) && (player <= m_numTeam1)) {
+                m_team1[player-1]->editTurnovers(numTurnovers);
+            } else if ((team == 2) && (player <= m_numTeam2)) {
+                m_team2[player-1]->editTurnovers(numTurnovers);
+            }
+        }
 
         // Edits 1/2-pointers for a specified player
         void editPm(int team, int player, int numPm) {
             if ((team == 1) && (player <= m_numTeam1)) {
                 m_team1[player-1]->editPm(numPm);
+                m_score1 += m_pointValue * numPm;
             } else if ((team == 2) && (player <= m_numTeam2)) {
                 m_team2[player-1]->editPm(numPm);
+                m_score2 += m_pointValue * numPm;
             }
         }
 
@@ -203,8 +229,10 @@ class Statboard
         void editPm3(int team, int player, int numPm3) {
             if ((team == 1) && (player <= m_numTeam1)) {
                 m_team1[player-1]->editPm3(numPm3);
+                m_score1 += (m_pointValue + 1) * numPm3;
             } else if ((team == 2) && (player <= m_numTeam2)) {
                 m_team2[player-1]->editPm3(numPm3);
+                m_score2 += (m_pointValue + 1) * numPm3;
             }
         }
 
@@ -241,6 +269,8 @@ class Statboard
             }
 
             printLine();
+            std::cout << std::setfill(' ') << "Score: " << std::setw(2) << m_score1 << std::setw(37) << std::right << "|" << std::endl;
+            printLine();
             std::cout << std::endl;
 
             // Print team 2 stats
@@ -251,6 +281,8 @@ class Statboard
                 printPlayer(m_team2[j], j+1);
             }
 
+            printLine();
+            std::cout << std::setfill(' ') << "Score: " << std::setw(2) << m_score2 << std::setw(37) << std::right << "|" << std::endl;
             printLine();
             std::cout << std::endl;
         }
@@ -313,10 +345,12 @@ class Statboard
         // Team 1 Variables
         Player *m_team1[MAX_PLAYERS];
         int m_numTeam1;
+        int m_score1;
 
         // Team 2 Variables
         Player *m_team2[MAX_PLAYERS];
         int m_numTeam2;
+        int m_score2;
 
         // Base Point Value
         int m_pointValue;
@@ -324,6 +358,7 @@ class Statboard
 
 // Key:
 //  A/a: Assist
+//  B/b: Block (TODO)
 //  R/r: Rebound
 //  S/s: Steal
 //  T/t: Turnover
@@ -466,8 +501,17 @@ class BallegeStatTracker {
         // Sends updates to the board as prompted
         void updateBoard(int team, int player, char stat, int amt) {
             switch(stat) {
+                case 'a':
+                    m_board->editAssists(team, player, amt);
+                    break;
                 case 'r':
                     m_board->editRebounds(team, player, amt);
+                    break;
+                case 's':
+                    m_board->editSteals(team, player, amt);
+                    break;
+                case 't':
+                    m_board->editTurnovers(team, player, amt);
                     break;
                 case 'p':
                     m_board->editPm(team, player, amt);
@@ -560,6 +604,7 @@ class BallegeStatTracker {
         // Prints program key
         // Key:
         //  A/a: Assist
+        //  B/b: Block
         //  R/r: Rebound
         //  S/s: Steal
         //  T/t: Turnover
@@ -592,19 +637,19 @@ class BallegeStatTracker {
 int main() {
 
     std::string team1[5] = {
-        "Kalani",
-        "Hollord",
+        "Jason",
         "John",
+        "Kent",
         "Nathan",
-        "JCheng"
+        "Ryan"
     };
 
     std::string team2[5] = {
-        "Nathan",
-        "Joseph",
-        "Chris",
-        "Daniel",
-        "Thomas"
+        "Gideon",
+        "Justin",
+        "Kalani",
+        "Kaison",
+        "Vincent"
     };
     
     BallegeStatTracker b = BallegeStatTracker(1, team1, team2);
